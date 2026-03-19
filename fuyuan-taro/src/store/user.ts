@@ -1,6 +1,6 @@
-import create from 'zustand/vanilla'
+import { create } from 'zustand'
 import Taro from '@tarojs/taro'
-import { getUserInfo } from '@/services/user'
+import { getUserInfo as fetchUserInfo } from '@/services/user'
 
 interface UserInfo {
   id: string
@@ -103,7 +103,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ isLoading: true })
 
     try {
-      const res = await getUserInfo()
+      const res = await fetchUserInfo()
       if (res.data) {
         const userInfo = res.data
         set({
@@ -150,5 +150,5 @@ initStore()
 // 导出辅助函数
 export const getIsLoggedIn = () => useUserStore.getState().isLoggedIn
 export const getToken = () => useUserStore.getState().token
-export const getUserInfo = () => useUserStore.getState().userInfo
+export const getUserInfoData = () => useUserStore.getState().userInfo
 export const getUserId = () => useUserStore.getState().userInfo?.id

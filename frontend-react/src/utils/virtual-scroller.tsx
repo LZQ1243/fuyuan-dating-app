@@ -3,7 +3,7 @@
  * 支持大数据量列表渲染
  */
 
-import React, { useRef, useMemo, useCallback, useEffect } from 'react';
+import React, { useRef, useMemo, useCallback, useEffect, useState } from 'react';
 
 interface VirtualScrollerProps<T> {
   items: T[];

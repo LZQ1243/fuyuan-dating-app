@@ -1,7 +1,7 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
+import { Component } from 'react'
+import { PropsWithChildren } from 'react'
 
-export default class App extends React.Component {
+export default class App extends Component<PropsWithChildren> {
 
   componentDidMount () {}
 

@@ -157,7 +157,7 @@ const Favorites: React.FC = () => {
                 >
                   <StarIcon fontSize="small" />
                 </Button>
-              </CardContent>
+              </Box>
               <Box sx={{ p: 2, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
                 <Button
                   size="small"
@@ -178,7 +178,8 @@ const Favorites: React.FC = () => {
                   移除
                 </Button>
               </Box>
-            </Card>
+            </CardContent>
+          </Card>
         ))}
       </Box>
 

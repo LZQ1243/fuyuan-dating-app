@@ -1,4 +1,5 @@
 import Taro from '@tarojs/taro'
+import { API_CONFIG } from './request'
 import config from '@/config'
 
 interface UploadOptions {
@@ -15,7 +16,7 @@ interface UploadOptions {
  */
 export const compressImage = async (
   filePath: string,
-  quality: number = config.upload.compressQuality
+  quality: number = config.upload?.compressQuality || 0.8
 ): Promise<string> => {
   try {
     const result = await Taro.compressImage({
@@ -38,7 +39,7 @@ export const checkFileSize = async (filePath: string): Promise<boolean> => {
     const fileInfo = await Taro.getFileInfo({
       filePath
     })
-    return fileInfo.size <= config.maxFileSize
+    return fileInfo.size <= config.upload.maxSize
   } catch (error) {
     console.error('获取文件信息失败:', error)
     return false
@@ -84,7 +85,7 @@ export const uploadFile = async (options: UploadOptions): Promise<any> => {
 
   return new Promise((resolve, reject) => {
     const uploadTask = Taro.uploadFile({
-      url: `${config.apiBaseUrl}/upload`,
+      url: `${API_CONFIG.baseURL}/upload`,
       filePath: compressedPath,
       name,
       formData: {
@@ -115,7 +116,7 @@ export const uploadFile = async (options: UploadOptions): Promise<any> => {
 
     // 监听上传进度
     if (onProgress) {
-      uploadTask.onProgressUpdate((res) => {
+      uploadTask?.onProgressUpdate?.((res: any) => {
         const progress = res.progress
         onProgress(progress)
       })
@@ -239,7 +240,7 @@ export const uploadVerificationImages = async (
 export const deleteFile = async (fileUrl: string): Promise<boolean> => {
   try {
     const response = await Taro.request({
-      url: `${config.apiBaseUrl}/upload/delete`,
+      url: `${API_CONFIG.baseURL}/upload/delete`,
       method: 'DELETE',
       data: { url: fileUrl },
       header: {
@@ -247,9 +248,12 @@ export const deleteFile = async (fileUrl: string): Promise<boolean> => {
       }
     })
 
-    return response.data.code === 0
+    return (response as any).data?.code === 0
   } catch (error) {
     console.error('删除文件失败:', error)
+    return false
+  }
+}
     return false
   }
 }
@@ -258,7 +262,7 @@ export const deleteFile = async (fileUrl: string): Promise<boolean> => {
  * 获取文件信息
  */
 export const getFileInfo = async (filePath: string) => {
-  return Taro.getFileInfo({ filePath })
+  return await Taro.getFileInfo({ filePath })
 }
 
 /**
@@ -277,7 +281,8 @@ export const previewImage = (urls: string[], current?: string) => {
 export const saveImageToPhotosAlbum = async (filePath: string): Promise<boolean> => {
   try {
     // 检查权限
-    const { authSetting } = await Taro.getSetting()
+    const setting = await Taro.getSetting()
+    const authSetting = (setting as any).authSetting || {}
 
     if (authSetting['scope.writePhotosAlbum'] === false) {
       // 引导用户开启权限
@@ -287,12 +292,15 @@ export const saveImageToPhotosAlbum = async (filePath: string): Promise<boolean>
         confirmText: '去设置'
       })
 
-      if (res.confirm) {
+      if ((res as any).confirm) {
         await Taro.openSetting()
         return false
       }
       return false
     }
+
+    await Taro.saveImageToPhotosAlbum({ filePath })
+    return true
 
     // 保存图片
     await Taro.saveImageToPhotosAlbum({

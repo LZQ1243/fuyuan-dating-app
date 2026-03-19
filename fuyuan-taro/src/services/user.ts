@@ -127,7 +127,7 @@ export const uploadAvatar = (filePath: string) => {
     header: {
       'Authorization': `Bearer ${token}`
     }
-  })
+  }) as Promise<any>
 }
 
 /**

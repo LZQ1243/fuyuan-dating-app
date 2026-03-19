@@ -202,23 +202,24 @@ function ChatDetail() {
       </Card>
 
       <Card style={{ borderRadius: '10px', padding: '16px' }}>
-        <Input.TextArea
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="输入消息..."
-          autoSize={{ minRows: 1, maxRows: 4 }}
-          onPressEnter={sendMessage}
-          suffix={
-            <Button
-              type="primary"
-              icon={<SendOutlined />}
-              loading={loading}
-              onClick={sendMessage}
-            >
-              发送
-            </Button>
-          }
-        />
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <Input.TextArea
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="输入消息..."
+            autoSize={{ minRows: 1, maxRows: 4 }}
+            onPressEnter={sendMessage}
+            style={{ flex: 1 }}
+          />
+          <Button
+            type="primary"
+            icon={<SendOutlined />}
+            loading={loading}
+            onClick={sendMessage}
+          >
+            发送
+          </Button>
+        </div>
       </Card>
     </div>
   );

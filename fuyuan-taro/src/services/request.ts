@@ -57,3 +57,14 @@ function request<T = any>(options: {
 }
 
 export default request
+
+// 导出配置供其他文件使用
+export const API_CONFIG = {
+  name: 'Fuyuan',
+  version: '1.0.0',
+  env: 'development',
+  apiConfig: {},
+  baseURL: BASE_URL,
+  wsURL: 'ws://localhost:3000',
+  uploadURL: 'http://localhost:3000/api/upload'
+}

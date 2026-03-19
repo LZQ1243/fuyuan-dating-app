@@ -9,7 +9,6 @@ export const uploadVoice = async (options: {
   duration: number
 }) => {
   return uploadFile({
-    url: '/voice/upload',
     filePath: options.filePath,
     name: 'audio',
     formData: {
@@ -22,12 +21,18 @@ export const uploadVoice = async (options: {
  * 删除语音文件
  */
 export const deleteVoice = async (id: string) => {
-  return request.delete(`/voice/${id}`)
+  return request({
+    url: `/voice/${id}`,
+    method: 'DELETE'
+  })
 }
 
 /**
  * 获取语音信息
  */
 export const getVoiceInfo = async (id: string) => {
-  return request.get(`/voice/${id}`)
+  return request({
+    url: `/voice/${id}`,
+    method: 'GET'
+  })
 }

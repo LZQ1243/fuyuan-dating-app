@@ -1,6 +1,16 @@
-import { io, Socket } from 'socket.io-client'
 import Taro from '@tarojs/taro'
 import { getToken } from '@/store/user'
+
+// Socket.IO 类型声明
+interface Socket {
+  on(event: string, listener: (...args: any[]) => void): this
+  off(event: string, listener?: (...args: any[]) => void): this
+  emit(event: string, ...args: any[]): void
+  disconnect(): void
+  connect(): void
+}
+
+declare const io: (url: string, options?: any) => Socket
 
 // WebSocket连接状态
 type ConnectionState = 'connecting' | 'connected' | 'disconnected' | 'error'
@@ -35,7 +45,7 @@ class WebSocketService {
       this.state = 'connecting'
 
       // 从配置获取WebSocket地址
-      const wsUrl = APP_CONFIG.wsURL
+      const wsUrl = 'ws://localhost:3000' // 使用默认地址，或从环境变量读取
 
       console.log('WebSocket: 正在连接...', wsUrl)
 
