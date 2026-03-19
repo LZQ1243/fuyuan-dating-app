@@ -1,0 +1,44 @@
+/* 全局样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Element Plus 覆盖
+.el-button--primary {
+  background: linear-gradient(135deg, #FF8E8C 0%, #FF6B6B 100%);
+  border: none;
+
+  &:hover {
+    background: linear-gradient(135deg, #FF7B7A 0%, #FF5A5A 100%);
+  }
+}
+
+.el-menu-item.is-active {
+  color: #FF6B6B;
+  background-color: rgba(255, 107, 107, 0.1);
+}
+
+.el-pagination.is-background .el-pager li.is-active {
+  background: #FF6B6B;
+}
+
+.el-radio.is-checked .el-radio__inner {
+  background: #FF6B6B;
+  border-color: #FF6B6B;
+}
+
+.el-checkbox.is-checked .el-checkbox__inner {
+  background: #FF6B6B;
+  border-color: #FF6B6B;
+}

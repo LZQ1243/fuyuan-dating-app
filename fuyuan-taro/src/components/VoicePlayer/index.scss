@@ -1,0 +1,73 @@
+.voice-player {
+  display: flex;
+  justify-content: flex-start;
+  margin: 8px 0;
+
+  &.from-self {
+    justify-content: flex-end;
+  }
+}
+
+.voice-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  max-width: 280px;
+
+  .from-self & {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+    color: #fff;
+  }
+
+  .from-other & {
+    background: #fff;
+    color: #333;
+    border: 1px solid #e0e0e0;
+  }
+}
+
+.play-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .from-other & {
+    background: #f5f5f5;
+  }
+}
+
+.play-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.voice-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.duration-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.current-time {
+  font-weight: 500;
+}
+
+.total-time {
+  opacity: 0.6;
+}
+
+.progress-bar {
+  width: 100%;
+}

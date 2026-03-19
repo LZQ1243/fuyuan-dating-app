@@ -1,0 +1,91 @@
+{
+  "name": "fuyuan-backend",
+  "version": "1.0.0",
+  "description": "赴缘婚恋社交平台 - 后端服务（支持所有数据库类型）",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "jest --coverage",
+    "lint": "eslint src/**/*.js",
+    "mysql:init": "node scripts/init-mysql.js",
+    "install:mysql": "npm install mysql2",
+    "install:postgres": "npm install pg",
+    "install:sqlite": "npm install sqlite3",
+    "install:sqlserver": "npm install tedious",
+    "install:oracle": "npm install oracledb",
+    "install:couchbase": "npm install couchbase",
+    "install:all-dbs": "npm install mysql2 pg sqlite3 tedious oracledb couchbase"
+  },
+  "keywords": [
+    "dating",
+    "social",
+    "matchmaking",
+    "accessibility",
+    "ai",
+    "mongodb",
+    "mysql",
+    "postgresql",
+    "sqlite",
+    "sqlserver",
+    "oracle",
+    "couchbase",
+    "universal-database"
+  ],
+  "author": "Fuyuan Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^8.0.3",
+    "mysql2": "^3.6.5",
+    "redis": "^4.6.12",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "express-validator": "^7.0.1",
+    "multer": "^1.4.5-lts.1",
+    "socket.io": "^4.6.1",
+    "amqplib": "^0.10.3",
+    "axios": "^1.6.5",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "winston": "^3.11.0",
+    "mongoose-paginate-v2": "^1.8.0",
+    "dotenv-expand": "^10.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "jest": "^29.7.0",
+    "eslint": "^8.56.0",
+    "supertest": "^6.3.4"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "optionalDependencies": {
+    "pg": "^8.11.0",
+    "sqlite3": "^5.1.6",
+    "tedious": "^16.7.0",
+    "oracledb": "^6.3.0",
+    "couchbase": "^4.2.6"
+  },
+  "peerDependencies": {},
+  "peerDependenciesMeta": {
+    "pg": {
+      "optional": true
+    },
+    "sqlite3": {
+      "optional": true
+    },
+    "tedious": {
+      "optional": true
+    },
+    "oracledb": {
+      "optional": true
+    },
+    "couchbase": {
+      "optional": true
+    }
+  }
+}

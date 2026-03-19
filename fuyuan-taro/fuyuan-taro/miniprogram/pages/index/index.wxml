@@ -1,0 +1,39 @@
+<!-- 首页 -->
+<view class="container">
+  <!-- 顶部区域 -->
+  <view class="header">
+    <image class="logo" src="/images/logo.png" mode="aspectFit"></image>
+    <text class="title">赴缘婚恋</text>
+    <text class="subtitle">遇见对的人</text>
+  </view>
+
+  <!-- 功能介绍 -->
+  <view class="features">
+    <view class="feature-item">
+      <image class="feature-icon" src="/images/icons/match.png"></image>
+      <text class="feature-title">智能匹配</text>
+      <text class="feature-desc">AI智能算法，精准匹配</text>
+    </view>
+    <view class="feature-item">
+      <image class="feature-icon" src="/images/icons/chat.png"></image>
+      <text class="feature-title">实时聊天</text>
+      <text class="feature-desc">即时通讯，畅聊无阻</text>
+    </view>
+    <view class="feature-item">
+      <image class="feature-icon" src="/images/icons/matchmaker.png"></image>
+      <text class="feature-title">红娘服务</text>
+      <text class="feature-desc">专业红娘，贴心服务</text>
+    </view>
+  </view>
+
+  <!-- 底部登录按钮 -->
+  <view class="footer">
+    <button class="btn-wechat" open-type="getUserInfo" bindgetuserinfo="handleWechatLogin">
+      <image class="wechat-icon" src="/images/icons/wechat.png"></image>
+      微信一键登录
+    </button>
+    <button class="btn-phone" bindtap="goToPhoneLogin">
+      手机号登录
+    </button>
+  </view>
+</view>

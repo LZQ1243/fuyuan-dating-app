@@ -1,0 +1,16 @@
+{
+  "folders": [
+    {
+      "path": "./fuyuan-taro"
+    }
+  ],
+  "settings": {
+    "typescript.validate.enable": false,
+    "javascript.validate.enable": false,
+    "typescript.tsc.autoDetect": "off",
+    "typescript.preferences.disableSuggestions": true,
+    "json.schemaDownload.enable": false,
+    "json.schemas": [],
+    "mcp.servers": {}
+  }
+}

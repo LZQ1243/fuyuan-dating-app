@@ -1,0 +1,237 @@
+version: '3.8'
+
+services:
+  # ====================================
+  # MongoDB - 任意MongoDB服务
+  # ====================================
+  mongodb:
+    image: mongo:6.0
+    container_name: fuyuan-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-fuyuan}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-changeme}
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - fuyuan-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ====================================
+  # MySQL - 任意MySQL服务
+  # ====================================
+  mysql:
+    image: mysql:8.0
+    container_name: fuyuan-mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-changeme}
+      MYSQL_DATABASE: ${MYSQL_DB:-fuyuan}
+      MYSQL_USER: ${MYSQL_USER:-fuyuan}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-changeme}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - fuyuan-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ====================================
+  # PostgreSQL - 任意PostgreSQL服务
+  # ====================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: fuyuan-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fuyuan}
+      POSTGRES_USER: ${POSTGRES_USER:-fuyuan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fuyuan-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ====================================
+  # Redis - 任意Redis服务
+  # ====================================
+  redis:
+    image: redis:7-alpine
+    container_name: fuyuan-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD:-changeme}
+    volumes:
+      - redis_data:/data
+    networks:
+      - fuyuan-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ====================================
+  # MariaDB - 任意MariaDB服务
+  # ====================================
+  mariadb:
+    image: mariadb:10.11
+    container_name: fuyuan-mariadb
+    restart: always
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-changeme}
+      MYSQL_DATABASE: ${MARIADB_DB:-fuyuan}
+      MYSQL_USER: ${MARIADB_USER:-fuyuan}
+      MYSQL_PASSWORD: ${MARIADB_PASSWORD:-changeme}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - fuyuan-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$${MARIADB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ====================================
+  # 后端服务
+  # ====================================
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile.production
+    container_name: fuyuan-backend
+    restart: always
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+
+      # 通用数据库配置 - 支持任何数据库
+      DATABASE_URI: ${DATABASE_URI:-mongodb://admin:${MONGO_PASSWORD:-changeme}@mongodb:27017/fuyuan?authSource=admin}
+
+      # 辅助数据库（可选）
+      DATABASE_AUX1_URI: ${DATABASE_AUX1_URI:-}
+      DATABASE_AUX2_URI: ${DATABASE_AUX2_URI:-}
+
+      # 连接池配置
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-20}
+      DB_MIN_POOL_SIZE: ${DB_MIN_POOL_SIZE:-5}
+      DB_TIMEOUT: ${DB_TIMEOUT:-5000}
+      DB_SOCKET_TIMEOUT: ${DB_SOCKET_TIMEOUT:-60000}
+      DB_IDLE_TIMEOUT: ${DB_IDLE_TIMEOUT:-30000}
+
+      # Redis
+      REDIS_URI: redis://:${REDIS_PASSWORD:-changeme}@redis:6379
+
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-your-production-secret-key-change-me}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+
+      # 其他
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE:-10485760}
+      UPLOAD_PATH: /app/uploads
+      ENABLE_SENSITIVE_WORD_FILTER: ${ENABLE_SENSITIVE_WORD_FILTER:-true}
+
+    volumes:
+      - backend_uploads:/app/uploads
+      - backend_logs:/app/logs
+      - backend_config:/app/config
+    depends_on:
+      - mongodb
+      - mysql
+      - postgres
+      - redis
+      - mariadb
+    networks:
+      - fuyuan-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ====================================
+  # 前端服务
+  # ====================================
+  frontend:
+    build:
+      context: ../frontend-react
+      dockerfile: Dockerfile
+    container_name: fuyuan-frontend
+    restart: always
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - backend
+    networks:
+      - fuyuan-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ====================================
+  # Nginx反向代理
+  # ====================================
+  nginx:
+    image: nginx:alpine
+    container_name: fuyuan-nginx
+    restart: always
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - backend_uploads:/var/www/uploads:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - fuyuan-network
+
+volumes:
+  mongodb_data:
+  mongodb_config:
+  mysql_data:
+  postgres_data:
+  redis_data:
+  mariadb_data:
+  backend_uploads:
+  backend_logs:
+  backend_config:
+
+networks:
+  fuyuan-network:
+    driver: bridge

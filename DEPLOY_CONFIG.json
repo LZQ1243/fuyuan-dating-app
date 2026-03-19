@@ -1,0 +1,59 @@
+{
+  "project": "赴缘婚恋应用开发",
+  "version": "1.0.0",
+  "description": "全平台兼容全自动一键部署配置",
+
+  "server": {
+    "type": "linux",
+    "os": "ubuntu|centos|debian|alpine",
+    "arch": "amd64|arm64",
+    "minRam": "2GB",
+    "minDisk": "20GB"
+  },
+
+  "databases": {
+    "supported": [
+      "mongodb",
+      "mysql",
+      "postgresql",
+      "sqlite",
+      "sqlserver",
+      "oracle",
+      "couchbase"
+    ],
+    "default": "mongodb",
+    "autoInstall": true
+  },
+
+  "services": {
+    "backend": {
+      "name": "fuyuan-backend",
+      "port": 3000,
+      "env": "production",
+      "nodeVersion": "18.x"
+    },
+    "frontend": {
+      "name": "fuyuan-frontend",
+      "port": 80,
+      "ssl": true
+    },
+    "redis": {
+      "name": "fuyuan-redis",
+      "port": 6379
+    },
+    "rabbitmq": {
+      "name": "fuyuan-rabbitmq",
+      "port": 5672
+    }
+  },
+
+  "autoConfig": {
+    "installNode": true,
+    "installDocker": true,
+    "installNginx": true,
+    "installSSL": true,
+    "setupFirewall": true,
+    "setupProcessManager": true,
+    "setupAutoStart": true
+  }
+}

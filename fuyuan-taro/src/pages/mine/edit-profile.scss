@@ -1,0 +1,132 @@
+.edit-profile-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding-bottom: 120px;
+}
+
+.header {
+  background-color: #ffffff;
+  padding: 30px;
+  border-bottom: 2px solid #e5e5e5;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: bold;
+  text-align: center;
+  color: #333333;
+}
+
+.form-container {
+  height: calc(100vh - 120px);
+}
+
+.form-section {
+  background-color: #ffffff;
+  margin: 20px;
+  padding: 30px;
+  border-radius: 20px;
+}
+
+.section-title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 20px;
+}
+
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0;
+  background-color: #f9f9f9;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+
+.avatar-preview {
+  width: 200px;
+  height: 200px;
+  border-radius: 100px;
+  border: 4px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-hint {
+  font-size: 26px;
+  color: #FF6B6B;
+  margin-top: 20px;
+}
+
+.form-item {
+  margin-bottom: 30px;
+}
+
+.label {
+  font-size: 28px;
+  color: #666666;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.input {
+  background-color: #f5f5f5;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 24px 30px;
+  font-size: 28px;
+}
+
+.picker {
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 24px 30px;
+}
+
+.picker-text {
+  flex: 1;
+  font-size: 28px;
+  color: #333333;
+}
+
+.picker-arrow {
+  font-size: 32px;
+  color: #cccccc;
+}
+
+.textarea-input {
+  background-color: #f5f5f5;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 20px 30px;
+  font-size: 28px;
+  min-height: 200px;
+  line-height: 1.6;
+}
+
+.footer {
+  padding: 30px;
+  position: sticky;
+  bottom: 0;
+  background-color: #ffffff;
+  border-top: 2px solid #e5e5e5;
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 48px;
+  padding: 24px;
+  font-size: 32px;
+  font-weight: bold;
+  width: 100%;
+
+  &::after {
+    border: none;
+  }
+}

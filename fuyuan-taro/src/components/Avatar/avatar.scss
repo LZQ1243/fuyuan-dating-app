@@ -1,0 +1,41 @@
+.avatar {
+  overflow: hidden;
+  background: #FFE4E4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  image {
+    width: 100%;
+    height: 100%;
+  }
+
+  &.avatar-circle {
+    border-radius: 50%;
+  }
+
+  &.avatar-square {
+    border-radius: 8px;
+  }
+
+  &.avatar-small {
+    width: 32px;
+    height: 32px;
+  }
+
+  &.avatar-medium {
+    width: 48px;
+    height: 48px;
+  }
+
+  &.avatar-large {
+    width: 80px;
+    height: 80px;
+  }
+
+  .avatar-placeholder {
+    font-size: 12px;
+    color: #999;
+  }
+}

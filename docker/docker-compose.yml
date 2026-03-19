@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # MongoDB数据库
+  mongodb:
+    image: mongo:6.0
+    container_name: fuyuan-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: fuyuan
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - fuyuan-network
+
+  # Redis缓存
+  redis:
+    image: redis:7-alpine
+    container_name: fuyuan-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - fuyuan-network
+
+  # RabbitMQ消息队列
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: fuyuan-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - fuyuan-network
+
+  # 后端服务
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: fuyuan-backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGODB_URI: mongodb://mongodb:27017/fuyuan
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_URL: amqp://admin:admin123@rabbitmq:5672
+      JWT_SECRET: your-production-secret-key-change-me
+      JWT_EXPIRES_IN: 7d
+    volumes:
+      - ../backend/uploads:/app/uploads
+      - ../backend/logs:/app/logs
+      - ../backend/config:/app/config
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+    networks:
+      - fuyuan-network
+
+  # Nginx反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: fuyuan-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ../backend/uploads:/var/www/uploads
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - backend
+    networks:
+      - fuyuan-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+  rabbitmq_data:
+
+networks:
+  fuyuan-network:
+    driver: bridge

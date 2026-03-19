@@ -1,0 +1,99 @@
+.index {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px;
+}
+
+.header {
+  text-align: center;
+  padding: 60px 0 40px;
+
+  .title {
+    display: block;
+    font-size: 56px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 20px;
+  }
+
+  .subtitle {
+    display: block;
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.content {
+  background: #fff;
+  border-radius: 20px;
+  padding: 60px 40px;
+  margin-bottom: 40px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+
+  .avatar {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+  }
+
+  .nickname {
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+  }
+}
+
+.login-btn {
+  width: 100%;
+  height: 96px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-size: 32px;
+  font-weight: bold;
+  border-radius: 48px;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+
+  &::after {
+    border: none;
+  }
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.feature-item {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+
+  .feature-icon {
+    font-size: 48px;
+  }
+
+  .feature-title {
+    font-size: 32px;
+    font-weight: bold;
+    color: #fff;
+    flex: 1;
+  }
+
+  .feature-desc {
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+}

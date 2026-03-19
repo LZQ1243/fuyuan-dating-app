@@ -1,0 +1,164 @@
+.user-detail-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #FFF5F5 0%, #FFE4E4 100%);
+  padding-bottom: 20px;
+
+  &.loading,
+  &.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-size: 16px;
+    color: #999;
+  }
+}
+
+.detail-header {
+  background: linear-gradient(135deg, #FF8E8C 0%, #FF6B6B 100%);
+  padding: 40px 20px 30px;
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.5);
+  margin-right: 16px;
+}
+
+.info {
+  flex: 1;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.nickname {
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-right: 8px;
+}
+
+.verified {
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.gender {
+  font-size: 20px;
+  color: #ffffff;
+  margin-right: 8px;
+}
+
+.age,
+.location {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-right: 12px;
+}
+
+.photos-section,
+.info-section {
+  background: #ffffff;
+  margin: 16px;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.section-title {
+  display: block;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.photo-item {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: #F5F5F5;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  font-size: 14px;
+  color: #666;
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.value {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.bio-text {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  position: sticky;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  border-top: 1px solid #FFE4E4;
+}
+
+.btn {
+  flex: 1;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22px;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+}
+
+.btn-like {
+  background: #ffffff;
+  color: #FF6B6B;
+  border: 1px solid #FF6B6B;
+}
+
+.btn-chat {
+  background: linear-gradient(135deg, #FF8E8C 0%, #FF6B6B 100%);
+  color: #ffffff;
+}

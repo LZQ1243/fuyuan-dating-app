@@ -1,0 +1,140 @@
+.chat-list-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.page-header {
+  background: linear-gradient(135deg, #ff6b9d 0%, #ff8a80 100%);
+  padding: 40px 30px 30px;
+
+  .page-title {
+    display: block;
+    font-size: 36px;
+    font-weight: bold;
+    color: #fff;
+  }
+}
+
+.chat-list {
+  background: #fff;
+}
+
+.chat-item {
+  display: flex;
+  align-items: center;
+  padding: 24px 30px;
+  border-bottom: 1px solid #f0f0f0;
+  position: relative;
+
+  &:active {
+    background: #f8f8f8;
+  }
+
+  .avatar-wrapper {
+    position: relative;
+    margin-right: 24px;
+
+    .avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50px;
+    }
+
+    .online-badge {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
+      background: #52c41a;
+      border: 3px solid #fff;
+      border-radius: 50%;
+    }
+
+    .unread-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ff4d4f;
+      min-width: 36px;
+      height: 36px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 8px;
+
+      .unread-count {
+        font-size: 20px;
+        color: #fff;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .chat-content {
+    flex: 1;
+    overflow: hidden;
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+
+      .nickname {
+        font-size: 30px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .last-time {
+        font-size: 22px;
+        color: #999;
+      }
+    }
+
+    .last-message {
+      display: block;
+      font-size: 26px;
+      color: #999;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 40px;
+
+  .empty-icon {
+    font-size: 120px;
+    margin-bottom: 24px;
+  }
+
+  .empty-text {
+    font-size: 32px;
+    color: #999;
+    margin-bottom: 16px;
+  }
+
+  .empty-hint {
+    font-size: 24px;
+    color: #ccc;
+  }
+}
+
+.loading {
+  text-align: center;
+  padding: 40px 0;
+
+  text {
+    font-size: 24px;
+    color: #999;
+  }
+}

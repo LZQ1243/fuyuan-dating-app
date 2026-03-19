@@ -1,0 +1,28 @@
+.lottie-animation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.lottie-loading,
+.lottie-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-placeholder,
+.error-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.loading-text,
+.error-text {
+  font-size: 14px;
+  color: #999;
+}
