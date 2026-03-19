@@ -34,7 +34,6 @@ out/
 .temp/
 
 # 编辑器
-.vscode/
 .idea/
 *.swp
 *.swo
