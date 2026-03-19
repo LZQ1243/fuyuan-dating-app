@@ -5,6 +5,12 @@ echo   赴缘婚恋应用 - 推送到 GitHub
 echo ==================================
 echo.
 
+REM 切换到项目目录
+cd /d "C:\Users\Administrator\Desktop\赴缘婚恋应用开发"
+
+echo 当前目录: %cd%
+echo.
+
 echo 当前分支:
 git branch --show-current
 echo.
