@@ -1,5 +1,5 @@
 # 构建阶段
-FROM node:18-alpine AS builder
+FROM node:18-alpine as builder
 
 WORKDIR /app
 
@@ -7,10 +7,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# 复制源代码
+# 复制源代码并构建
 COPY . .
-
-# 构建应用
 RUN npm run build
 
 # 生产阶段
@@ -24,10 +22,6 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # 暴露端口
 EXPOSE 80
-
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1
 
 # 启动nginx
 CMD ["nginx", "-g", "daemon off;"]

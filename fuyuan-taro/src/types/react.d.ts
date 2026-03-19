@@ -1,19 +1,41 @@
-declare module 'react' {
-  export * from 'react'
+/// <reference types="@tarojs/taro" />
+
+declare module '*.scss' {
+  const content: Record<string, string>
+  export default content
 }
 
-declare module 'react-dom' {
-  export * from 'react-dom'
+declare module '*.css' {
+  const content: Record<string, string>
+  export default content
 }
 
-declare module 'react/jsx-runtime' {
-  export const Fragment: any
-  export const jsx: any
-  export const jsxs: any
+declare module '*.svg' {
+  const content: string
+  export default content
 }
 
-declare module 'react/jsx-dev-runtime' {
-  export const Fragment: any
-  export const jsxDEV: any
-  export const jsxsDEV: any
+declare module '*.png' {
+  const content: string
+  export default content
+}
+
+declare module '*.jpg' {
+  const content: string
+  export default content
+}
+
+declare module '*.jpeg' {
+  const content: string
+  export default content
+}
+
+declare module '*.gif' {
+  const content: string
+  export default content
+}
+
+declare module '*.webp' {
+  const content: string
+  export default content
 }

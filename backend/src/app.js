@@ -32,21 +32,26 @@ connectDB().then(() => {
 connectRedis();
 
 // 安全中间件
-app.use(helmet());
+const { securityHeaders, xssProtection, csrfProtection } = require('./middleware/security');
+const { errorHandler, notFound } = require('./utils/error-handler');
+
+app.use(securityHeaders);
+app.use(xssProtection);
 app.use(cors({
   origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
   credentials: true
 }));
 
+// CSRF保护 (在API路由前启用)
+if (process.env.NODE_ENV === 'production') {
+  app.use(csrfProtection);
+}
+
 // 限流
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
-  message: {
-    code: 429,
-    message: '请求过于频繁，请稍后再试'
-  }
-});
+const { rateLimitConfig, apiRateLimitConfig, loginRateLimitConfig } = require('./middleware/security');
+const rateLimit = require('express-rate-limit');
+
+const limiter = rateLimit(rateLimitConfig);
 app.use('/api/', limiter);
 
 // 解析中间件

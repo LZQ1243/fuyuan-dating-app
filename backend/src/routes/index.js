@@ -49,6 +49,10 @@ router.use('/accessibility', accessibilityRoutes);
 const sensitiveWordsRoutes = require('./sensitiveWords');
 router.use('/sensitive-words', sensitiveWordsRoutes);
 
+// 新增：API端点管理路由
+const apiEndpointsRoutes = require('./apiEndpoints');
+router.use('/api-endpoints', apiEndpointsRoutes);
+
 // 新增：朋友圈路由
 const momentsRoutes = require('./moments');
 router.use('/moments', momentsRoutes);

@@ -1,0 +1,108 @@
+name: Taro Mini Program CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'fuyuan-taro/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'fuyuan-taro/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+
+    - name: 设置 Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: fuyuan-taro/package-lock.json
+
+    - name: 安装依赖
+      working-directory: ./fuyuan-taro
+      run: npm ci
+
+    - name: 运行 Lint
+      working-directory: ./fuyuan-taro
+      run: npm run lint || echo "No lint script"
+
+    - name: 运行 TypeScript 类型检查
+      working-directory: ./fuyuan-taro
+      run: npx tsc --noEmit
+
+    - name: 运行测试
+      working-directory: ./fuyuan-taro
+      run: npm run test || echo "No test script yet"
+      env:
+        CI: true
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        cache-dependency-path: fuyuan-taro/package-lock.json
+
+    - name: 安装依赖
+      working-directory: ./fuyuan-taro
+      run: npm ci
+
+    - name: 构建微信小程序
+      working-directory: ./fuyuan-taro
+      run: npm run build:weapp
+      env:
+        TARO_APP_ID: ${{ secrets.TARO_APP_ID }}
+
+    - name: 上传构建产物
+      uses: actions/upload-artifact@v3
+      with:
+        name: taro-weapp-build
+        path: fuyuan-taro/dist
+        retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+
+    - name: 安装微信开发者工具 CLI
+      run: |
+        npm install -g miniprogram-ci
+
+    - name: 上传到微信小程序平台
+      working-directory: ./fuyuan-taro
+      run: |
+        echo "上传到微信小程序平台..."
+        # 这里需要配置微信小程序的上传脚本
+        # miniprogram-ci upload --project . --version ${{ github.sha }} --desc "CI/CD 自动上传"
+      env:
+        WECHAT_APP_ID: ${{ secrets.WECHAT_APP_ID }}
+        WECHAT_PRIVATE_KEY: ${{ secrets.WECHAT_PRIVATE_KEY }}

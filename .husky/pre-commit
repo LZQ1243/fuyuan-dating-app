@@ -1,0 +1,115 @@
+#!/bin/bash
+
+# Pre-commit hook for code quality checks
+
+echo "🔍 Running pre-commit checks..."
+
+# Store the exit status
+EXIT_STATUS=0
+
+# 1. Check staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+if [ -z "$STAGED_FILES" ]; then
+  echo "✅ No staged files to check"
+  exit 0
+fi
+
+echo "📝 Staged files:"
+echo "$STAGED_FILES"
+
+# 2. Run linting on staged files
+echo "🔍 Running ESLint..."
+if command -v npx &> /dev/null; then
+  npx lint-staged
+  if [ $? -ne 0 ]; then
+    echo "❌ ESLint failed"
+    EXIT_STATUS=1
+  else
+    echo "✅ ESLint passed"
+  fi
+else
+  echo "⚠️  npx not found, skipping ESLint"
+fi
+
+# 3. Run Prettier format check
+echo "🔍 Running Prettier check..."
+if command -v npx &> /dev/null; then
+  npx prettier --check $STAGED_FILES
+  if [ $? -ne 0 ]; then
+    echo "❌ Prettier check failed"
+    echo "💡 Run 'npm run format' to fix formatting issues"
+    EXIT_STATUS=1
+  else
+    echo "✅ Prettier check passed"
+  fi
+else
+  echo "⚠️  npx not found, skipping Prettier check"
+fi
+
+# 4. Run tests for backend
+if [[ "$STAGED_FILES" == *"backend"* ]]; then
+  echo "🔍 Running backend tests..."
+  cd backend
+  if npm run test:ci; then
+    echo "✅ Backend tests passed"
+  else
+    echo "❌ Backend tests failed"
+    EXIT_STATUS=1
+  fi
+  cd ..
+fi
+
+# 5. Run tests for frontend
+if [[ "$STAGED_FILES" == *"frontend-react"* ]]; then
+  echo "🔍 Running frontend tests..."
+  cd frontend-react
+  if npm run test:ci; then
+    echo "✅ Frontend tests passed"
+  else
+    echo "❌ Frontend tests failed"
+    EXIT_STATUS=1
+  fi
+  cd ..
+fi
+
+# 6. Run type checking for TypeScript files
+if [[ "$STAGED_FILES" == *".ts" ]] || [[ "$STAGED_FILES" == *".tsx" ]]; then
+  echo "🔍 Running TypeScript type check..."
+  if command -v npx &> /dev/null; then
+    npx tsc --noEmit
+    if [ $? -ne 0 ]; then
+      echo "❌ TypeScript type check failed"
+      EXIT_STATUS=1
+    else
+      echo "✅ TypeScript type check passed"
+    fi
+  else
+    echo "⚠️  npx not found, skipping TypeScript type check"
+  fi
+fi
+
+# 7. Check for console.log (optional)
+if [[ "$STAGED_FILES" == *"src"* ]]; then
+  echo "🔍 Checking for console.log statements..."
+  if git diff --cached --name-only | xargs grep -l "console\.log" > /dev/null; then
+    echo "⚠️  Warning: console.log statements found in staged files"
+    echo "💡 Consider removing them before committing"
+    # Don't fail the commit, just warn
+  else
+    echo "✅ No console.log statements found"
+  fi
+fi
+
+# Final result
+if [ $EXIT_STATUS -eq 0 ]; then
+  echo ""
+  echo "🎉 All pre-commit checks passed!"
+  echo ""
+else
+  echo ""
+  echo "❌ Pre-commit checks failed!"
+  echo "Please fix the issues before committing"
+  echo ""
+fi
+
+exit $EXIT_STATUS

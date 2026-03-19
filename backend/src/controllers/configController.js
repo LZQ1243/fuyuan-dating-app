@@ -6,6 +6,8 @@
 const config = require('../config');
 const { getConfigMeta, getConfigItemMeta } = require('../config/config-meta');
 const logger = require('../utils/logger');
+const ConfigHistory = require('../models/ConfigHistory');
+const ConfigSnapshot = require('../models/ConfigSnapshot');
 
 /**
  * 获取所有配置
@@ -385,5 +387,204 @@ module.exports = {
   exportConfigs,
   importConfigs,
   getConfigSummary,
-  getConfigMetadata
+  getConfigMetadata,
+  /**
+   * 获取配置历史
+   */
+  getConfigHistory: async (source, limit = 20) => {
+    try {
+      const history = await ConfigHistory.find({ source })
+        .sort({ created_at: -1 })
+        .limit(limit)
+        .lean();
+
+      return history;
+    } catch (error) {
+      logger.error('获取配置历史失败:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 回滚配置
+   */
+  rollbackConfig: async (source, historyId) => {
+    try {
+      const historyRecord = await ConfigHistory.findOne({
+        source,
+        _id: historyId
+      });
+
+      if (!historyRecord) {
+        throw new Error('历史记录不存在');
+      }
+
+      // 恢复到旧值
+      await config.update(source, historyRecord.old_value);
+
+      return {
+        success: true,
+        message: '回滚成功',
+        rollback_to: historyRecord.old_value
+      };
+    } catch (error) {
+      logger.error('回滚配置失败:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 创建配置快照
+   */
+  createSnapshot: async (name, description) => {
+    try {
+      const allConfigs = config.getAllConfigs();
+
+      const snapshot = await ConfigSnapshot.create({
+        snapshot_id: `snapshot_${Date.now()}`,
+        name,
+        description,
+        configs: allConfigs
+      });
+
+      return {
+        success: true,
+        data: snapshot
+      };
+    } catch (error) {
+      logger.error('创建快照失败:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 恢复配置快照
+   */
+  restoreSnapshot: async (snapshotId) => {
+    try {
+      const snapshot = await ConfigSnapshot.findOne({
+        snapshot_id: snapshotId
+      });
+
+      if (!snapshot) {
+        throw new Error('快照不存在');
+      }
+
+      // 恢复所有配置
+      for (const [source, configs] of Object.entries(snapshot.configs)) {
+        await config.update(source, configs);
+      }
+
+      return {
+        success: true,
+        message: '恢复快照成功',
+        restored_from: snapshot.name
+      };
+    } catch (error) {
+      logger.error('恢复快照失败:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 获取快照列表
+   */
+  getSnapshots: async (limit = 10) => {
+    try {
+      const snapshots = await ConfigSnapshot.find()
+        .sort({ created_at: -1 })
+        .limit(limit)
+        .lean();
+
+      return snapshots;
+    } catch (error) {
+      logger.error('获取快照列表失败:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 配置对比
+   */
+  compareConfigs: async (config1, config2) => {
+    try {
+      const diff = {};
+
+      for (const key of Object.keys({ ...config1, ...config2 })) {
+        const val1 = config1[key];
+        const val2 = config2[key];
+
+        if (JSON.stringify(val1) !== JSON.stringify(val2)) {
+          diff[key] = {
+            old: val1,
+            new: val2,
+            changed: true
+          };
+        }
+      }
+
+      return diff;
+    } catch (error) {
+      logger.error('对比配置失败:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 批量验证配置
+   */
+  validateConfigsBatch: async (configs) => {
+    try {
+      const results = {};
+
+      for (const [source, configData] of Object.entries(configs)) {
+        try {
+          // 基本验证
+          const meta = getConfigItemMeta(source);
+          const isValid = await config.validateItem(source, meta);
+
+          results[source] = {
+            valid: isValid,
+            errors: isValid ? [] : ['配置值不符合规则']
+          };
+        } catch (error) {
+          results[source] = {
+            valid: false,
+            errors: [error.message]
+          };
+        }
+      }
+
+      return results;
+    } catch (error) {
+      logger.error('批量验证配置失败:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 获取配置使用统计
+   */
+  getConfigUsageStats: async () => {
+    try {
+      const historyCount = await ConfigHistory.countDocuments({});
+      const snapshotCount = await ConfigSnapshot.countDocuments({});
+
+      // 最近7天的变更次数
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const recentChanges = await ConfigHistory.countDocuments({
+        created_at: { $gte: sevenDaysAgo }
+      });
+
+      return {
+        total_history: historyCount,
+        total_snapshots: snapshotCount,
+        recent_changes: recentChanges,
+        average_daily_changes: Math.round(recentChanges / 7)
+      };
+    } catch (error) {
+      logger.error('获取配置统计失败:', error);
+      throw error;
+    }
+  }
 };

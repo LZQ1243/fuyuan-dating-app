@@ -1,0 +1,99 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+
+    - name: 设置 Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+
+    - name: 安装依赖
+      working-directory: ./backend
+      run: npm ci
+
+    - name: 运行 Lint
+      working-directory: ./backend
+      run: npm run lint
+
+    - name: 运行测试
+      working-directory: ./backend
+      run: npm run test:ci
+      env:
+        TEST_MONGODB_URI: mongodb://localhost:27017/fuyuan_test
+
+    - name: 生成测试覆盖率报告
+      working-directory: ./backend
+      run: npm run test -- --coverage --json --outputFile=coverage/coverage.json
+
+    - name: 上传覆盖率到 Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./backend/coverage/coverage.json
+        flags: backend
+        name: backend-coverage
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+
+    - name: 安装依赖
+      working-directory: ./backend
+      run: npm ci
+
+    - name: 构建项目
+      working-directory: ./backend
+      run: npm run build || echo "No build script, skipping"
+
+    - name: 构建 Docker 镜像
+      run: |
+        docker build -t fuyuan-backend:${{ github.sha }} -f backend/Dockerfile .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+
+    - name: 部署到生产环境
+      run: |
+        echo "部署到生产环境..."
+        # 这里添加实际的部署命令
+        # 例如: kubectl apply -f k8s/
+        # 或: docker push registry.fuyuan.com/fuyuan-backend:${{ github.sha }}

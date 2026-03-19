@@ -310,16 +310,208 @@
             </el-form-item>
           </el-form>
         </el-tab-pane>
+
+        <!-- 配置历史 -->
+        <el-tab-pane label="配置历史" name="history">
+          <div class="history-controls">
+            <el-select v-model="historySource" placeholder="选择配置源" @change="loadHistory">
+              <el-option label="API配置" value="api" />
+              <el-option label="阿里云配置" value="aliyun" />
+              <el-option label="腾讯云配置" value="tencent" />
+              <el-option label="数据库配置" value="database" />
+              <el-option label="Redis配置" value="redis" />
+              <el-option label="功能配置" value="features" />
+              <el-option label="安全配置" value="security" />
+            </el-select>
+            <el-button @click="loadHistory" :icon="Refresh">刷新历史</el-button>
+          </div>
+          <el-table :data="historyList" style="width: 100%">
+            <el-table-column prop="version" label="版本" width="100" />
+            <el-table-column prop="operator" label="操作人" width="120" />
+            <el-table-column prop="changes" label="变更内容" show-overflow-tooltip />
+            <el-table-column prop="createdAt" label="操作时间" width="180">
+              <template #default="{ row }">
+                {{ formatDate(row.createdAt) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="150">
+              <template #default="{ row }">
+                <el-button size="small" @click="handleViewHistory(row)">查看</el-button>
+                <el-button size="small" type="danger" @click="handleRollback(row)">回滚</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+
+        <!-- 配置快照 -->
+        <el-tab-pane label="配置快照" name="snapshots">
+          <div class="snapshot-actions">
+            <el-button type="primary" @click="handleCreateSnapshot" :icon="Camera">创建快照</el-button>
+            <el-button @click="loadSnapshots" :icon="Refresh">刷新快照</el-button>
+          </div>
+          <el-table :data="snapshotList" style="width: 100%">
+            <el-table-column prop="name" label="快照名称" width="200" />
+            <el-table-column prop="description" label="描述" show-overflow-tooltip />
+            <el-table-column prop="creator" label="创建人" width="120" />
+            <el-table-column prop="createdAt" label="创建时间" width="180">
+              <template #default="{ row }">
+                {{ formatDate(row.createdAt) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="200">
+              <template #default="{ row }">
+                <el-button size="small" @click="handleViewSnapshot(row)">查看</el-button>
+                <el-button size="small" type="warning" @click="handleRestoreSnapshot(row)">恢复</el-button>
+                <el-button size="small" type="danger" @click="handleDeleteSnapshot(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+
+        <!-- 配置对比 -->
+        <el-tab-pane label="配置对比" name="diff">
+          <el-form label-width="120px">
+            <el-form-item label="配置源1">
+              <el-select v-model="diffConfig.source1" placeholder="选择第一个配置源">
+                <el-option label="当前配置" value="current" />
+                <el-option v-for="snapshot in snapshotList" :key="snapshot._id" :label="snapshot.name" :value="snapshot._id" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="配置源2">
+              <el-select v-model="diffConfig.source2" placeholder="选择第二个配置源">
+                <el-option label="当前配置" value="current" />
+                <el-option v-for="snapshot in snapshotList" :key="snapshot._id" :label="snapshot.name" :value="snapshot._id" />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="handleCompare">对比配置</el-button>
+            </el-form-item>
+          </el-form>
+          <div v-if="diffResult" class="diff-result">
+            <h4>对比结果</h4>
+            <pre>{{ JSON.stringify(diffResult, null, 2) }}</pre>
+          </div>
+        </el-tab-pane>
+
+        <!-- 配置验证 -->
+        <el-tab-pane label="配置验证" name="validate">
+          <el-button type="primary" @click="handleValidateAll" :icon="CircleCheck">验证所有配置</el-button>
+          <el-divider />
+          <div v-if="validationResult">
+            <el-alert
+              :title="validationResult.valid ? '配置验证通过' : '配置验证失败'"
+              :type="validationResult.valid ? 'success' : 'error'"
+              :closable="false"
+            >
+              <template #default>
+                <div>有效配置: {{ validationResult.valid?.length || 0 }} 项</div>
+                <div v-if="validationResult.invalid?.length">
+                  无效配置: {{ validationResult.invalid.length }} 项
+                  <ul>
+                    <li v-for="item in validationResult.invalid" :key="item.key">
+                      {{ item.key }}: {{ item.message }}
+                    </li>
+                  </ul>
+                </div>
+              </template>
+            </el-alert>
+          </div>
+        </el-tab-pane>
+
+        <!-- 使用统计 -->
+        <el-tab-pane label="使用统计" name="stats">
+          <div class="stats-cards">
+            <el-card class="stat-card">
+              <template #header>
+                <span>配置总数</span>
+              </template>
+              <div class="stat-value">{{ stats.totalConfigs || 0 }}</div>
+            </el-card>
+            <el-card class="stat-card">
+              <template #header>
+                <span>配置修改次数</span>
+              </template>
+              <div class="stat-value">{{ stats.totalChanges || 0 }}</div>
+            </el-card>
+            <el-card class="stat-card">
+              <template #header>
+                <span>快照数量</span>
+              </template>
+              <div class="stat-value">{{ stats.totalSnapshots || 0 }}</div>
+            </el-card>
+            <el-card class="stat-card">
+              <template #header>
+                <span>最近更新时间</span>
+              </template>
+              <div class="stat-value">{{ stats.lastUpdate || '-' }}</div>
+            </el-card>
+          </div>
+          <el-button @click="loadStats" :icon="Refresh" style="margin-top: 20px">刷新统计</el-button>
+        </el-tab-pane>
       </el-tabs>
     </el-main>
+
+    <!-- 导入配置对话框 -->
+    <el-dialog v-model="importDialogVisible" title="导入配置" width="600px">
+      <el-upload
+        ref="uploadRef"
+        :auto-upload="false"
+        :on-change="handleFileChange"
+        accept=".json"
+        :limit="1"
+      >
+        <el-button :icon="Upload">选择配置文件</el-button>
+        <template #tip>
+          <div class="el-upload__tip">支持JSON格式的配置文件</div>
+        </template>
+      </el-upload>
+      <template #footer>
+        <el-button @click="importDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleImportConfirm" :loading="importing">导入</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 创建快照对话框 -->
+    <el-dialog v-model="snapshotDialogVisible" title="创建配置快照" width="500px">
+      <el-form :model="snapshotForm" label-width="100px">
+        <el-form-item label="快照名称">
+          <el-input v-model="snapshotForm.name" placeholder="请输入快照名称" />
+        </el-form-item>
+        <el-form-item label="描述">
+          <el-input v-model="snapshotForm.description" type="textarea" :rows="3" placeholder="请输入描述" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="snapshotDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleCreateSnapshotConfirm">创建</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 配置详情对话框 -->
+    <el-dialog v-model="detailDialogVisible" title="配置详情" width="800px">
+      <pre class="config-detail">{{ JSON.stringify(detailData, null, 2) }}</pre>
+    </el-dialog>
   </el-container>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Setting } from '@element-plus/icons-vue'
-import { getConfig, updateConfig } from '@/api/config'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Setting, Download, Upload, Refresh, Camera, CircleCheck } from '@element-plus/icons-vue'
+import {
+  getConfig,
+  updateConfig,
+  getConfigHistory,
+  rollbackConfig,
+  getSnapshots,
+  createSnapshot,
+  restoreSnapshot,
+  compareConfigs,
+  validateConfigsBatch,
+  getConfigUsageStats,
+  exportConfigs,
+  importConfigs
+} from '@/api/config'
 
 const activeTab = ref('api')
 const configForm = ref({
@@ -456,8 +648,10 @@ const loadConfig = async () => {
 const saveConfig = async (category) => {
   try {
     const updates = { [category]: configForm.value[category] }
+    console.log('保存配置:', category, updates)
+
     const res = await updateConfig(updates)
-    
+
     if (res.code === 200) {
       ElMessage.success('保存成功')
     } else {
@@ -507,5 +701,72 @@ onMounted(() => {
 
 .el-divider {
   margin: 30px 0 20px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.history-controls,
+.snapshot-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.diff-result {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.diff-result pre {
+  margin: 0;
+  max-height: 500px;
+  overflow: auto;
+}
+
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: bold;
+  color: #409eff;
+  margin: 10px 0;
+}
+
+.config-detail {
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 4px;
+  max-height: 500px;
+  overflow: auto;
+  margin: 0;
+}
+
+.config-detail::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.config-detail::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.config-detail::-webkit-scrollbar-track {
+  background: #f1f1f1;
 }
 </style>

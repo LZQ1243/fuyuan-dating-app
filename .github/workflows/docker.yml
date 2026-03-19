@@ -1,0 +1,63 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service: [backend, frontend]
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+
+    - name: 设置 Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: 登录到 Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: 提取元数据
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: fuyuan/${{ matrix.service }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix=
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: 构建并推送 Docker 镜像
+      uses: docker/build-push-action@v5
+      with:
+        context: ./${{ matrix.service }}
+        file: ./${{ matrix.service }}/Dockerfile
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=registry,ref=fuyuan/${{ matrix.service }}:buildcache
+        cache-to: type=registry,ref=fuyuan/${{ matrix.service }}:buildcache,mode=max
+
+    - name: 扫描镜像漏洞
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: fuyuan/${{ matrix.service }}:${{ github.sha }}
+        format: 'sarif'
+        output: 'trivy-results-${{ matrix.service }}.sarif'
+
+    - name: 上传 Trivy 扫描结果
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results-${{ matrix.service }}.sarif'

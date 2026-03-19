@@ -56,6 +56,16 @@ const routes = [
         path: 'region-matchmaker',
         name: 'RegionMatchmaker',
         component: () => import('@/views/RegionMatchmaker.vue')
+      },
+      {
+        path: 'config',
+        name: 'Config',
+        component: () => import('@/views/Config.vue')
+      },
+      {
+        path: 'api-endpoints',
+        name: 'APIEndpoints',
+        component: () => import('@/views/APIEndpoints.vue')
       }
     ]
   }

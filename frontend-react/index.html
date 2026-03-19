@@ -1,15 +1,83 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>赴缘 - 专业的残障人士婚恋平台</title>
-    <meta name="description" content="赴缘是为残障人士提供的专业婚恋社交平台，让爱无障碍" />
-    <meta name="keywords" content="婚恋,交友,残障人士,相亲,约会" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="赴缘婚恋 - 真实可靠的婚恋社交平台">
+  <meta name="keywords" content="婚恋,交友,相亲,约会,恋爱">
+  <meta name="theme-color" content="#1890ff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  
+  <!-- 预加载关键资源 -->
+  <link rel="preconnect" href="https://cdn.example.com">
+  <link rel="dns-prefetch" href="https://api.fuyuan.com">
+  <link rel="dns-prefetch" href="https://cdn.fuyuan.com">
+  
+  <!-- 预加载字体 -->
+  <link rel="preload" href="/fonts/main.woff2" as="font" type="font/woff2" crossorigin>
+  
+  <!-- 预连接 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Service Worker注册 -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(registration => {
+          console.log('SW registered:', registration);
+        }).catch(error => {
+          console.log('SW registration failed:', error);
+        });
+      });
+    }
+  </script>
+  
+  <!-- 关键CSS内联 -->
+  <style>
+    /* 关键CSS - 防止布局抖动 */
+    #root { min-height: 100vh; }
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f0f2f5;
+    }
+    .ant-spin {
+      color: #1890ff;
+    }
+    /* 隐藏未加载的内容 */
+    [x-cloak] { display: none !important; }
+  </style>
+  
+  <title>赴缘婚恋 - 真实可靠的婚恋社交平台</title>
+</head>
+<body>
+  <noscript>
+    <div style="padding: 20px; text-align: center;">
+      <h1>需要启用JavaScript</h1>
+      <p>请启用JavaScript以使用此应用</p>
+    </div>
+  </noscript>
+  
+  <div id="root" x-cloak>
+    <div class="loading-container">
+      <div class="ant-spin ant-spin-spinning">
+        <span class="ant-spin-dot ant-spin-dot-spin">
+          <i class="ant-spin-dot-item"></i>
+          <i class="ant-spin-dot-item"></i>
+          <i class="ant-spin-dot-item"></i>
+          <i class="ant-spin-dot-item"></i>
+        </span>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module" src="/src/main.tsx"></script>
+</body>
 </html>

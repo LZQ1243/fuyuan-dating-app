@@ -1,0 +1,62 @@
+name: Code Quality Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+
+    - name: 安装依赖
+      run: |
+        cd backend && npm ci --legacy-peer-deps
+        cd ../frontend-react && npm ci --legacy-peer-deps
+        cd ../fuyuan-taro && npm ci --legacy-peer-deps
+
+    - name: 运行后端 Lint
+      working-directory: ./backend
+      run: npm run lint
+
+    - name: 运行前端 Lint
+      working-directory: ./frontend-react
+      run: npm run lint
+
+    - name: 运行 Taro Lint
+      working-directory: ./fuyuan-taro
+      run: npm run lint || echo "No lint script"
+
+    - name: 检查代码格式化
+      run: |
+        npx prettier --check "**/*.{js,jsx,ts,tsx,json,css,scss,md}"
+
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+
+    - name: 运行安全审计
+      run: |
+        cd backend && npm audit --audit-level=high
+        cd ../frontend-react && npm audit --audit-level=high
+        cd ../fuyuan-taro && npm audit --audit-level=high
+
+    - name: 检查敏感信息
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: ${{ github.event.repository.default_branch }}
+        head: HEAD

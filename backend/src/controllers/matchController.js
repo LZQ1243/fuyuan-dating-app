@@ -1,6 +1,9 @@
 const User = require('../models/User');
 const { calculateAge } = require('../utils/index');
 const logger = require('../utils/logger');
+const MatchHistory = require('../models/MatchHistory');
+const UserFavorite = require('../models/UserFavorite');
+const UserBlacklist = require('../models/UserBlacklist');
 
 // 残疾类型关系矩阵（互补型和排斥型）
 const typeRelationships = {
@@ -168,4 +171,378 @@ const generateMatchReason = (score, user, candidate) => {
   }
 
   return reasons.length > 0 ? reasons.join('、') : '综合匹配';
+};
+
+/**
+ * 获取匹配历史
+ */
+exports.getMatchHistory = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const history = await MatchHistory.find({ user_id })
+      .sort({ created_at: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('target_user_id', 'nickname avatar gender')
+      .lean();
+
+    const total = await MatchHistory.countDocuments({ user_id });
+
+    res.json({
+      success: true,
+      data: {
+        history,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    logger.error('获取匹配历史失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取匹配历史失败'
+    });
+  }
+};
+
+/**
+ * 收藏用户
+ */
+exports.favoriteUser = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    const { favorite_user_id, note, tags } = req.body;
+
+    // 检查是否已经在收藏列表
+    const existing = await UserFavorite.findOne({
+      user_id,
+      favorite_user_id
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: '已经收藏过该用户'
+      });
+    }
+
+    // 检查是否相互收藏
+    const mutual = await UserFavorite.findOne({
+      user_id: favorite_user_id,
+      favorite_user_id: user_id
+    });
+
+    const favorite = await UserFavorite.create({
+      user_id,
+      favorite_user_id,
+      note,
+      tags: tags || [],
+      is_mutual: !!mutual
+    });
+
+    res.json({
+      success: true,
+      data: favorite
+    });
+  } catch (error) {
+    logger.error('收藏用户失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '收藏失败'
+    });
+  }
+};
+
+/**
+ * 取消收藏
+ */
+exports.unfavoriteUser = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    const { favorite_user_id } = req.params;
+
+    const result = await UserFavorite.findOneAndDelete({
+      user_id,
+      favorite_user_id
+    });
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: '收藏不存在'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: '取消收藏成功'
+    });
+  } catch (error) {
+    logger.error('取消收藏失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '取消收藏失败'
+    });
+  }
+};
+
+/**
+ * 获取收藏列表
+ */
+exports.getFavorites = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const favorites = await UserFavorite.find({ user_id })
+      .sort({ created_at: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('favorite_user_id', 'nickname avatar gender online_status')
+      .lean();
+
+    const total = await UserFavorite.countDocuments({ user_id });
+
+    res.json({
+      success: true,
+      data: {
+        favorites,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    logger.error('获取收藏列表失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取收藏列表失败'
+    });
+  }
+};
+
+/**
+ * 添加到黑名单
+ */
+exports.addToBlacklist = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    const { blocked_user_id, reason, remark } = req.body;
+
+    // 检查是否已经在黑名单
+    const existing = await UserBlacklist.findOne({
+      user_id,
+      blocked_user_id
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: '已经在黑名单中'
+      });
+    }
+
+    await UserBlacklist.create({
+      user_id,
+      blocked_user_id,
+      reason: reason || '其他',
+      remark: remark || ''
+    });
+
+    res.json({
+      success: true,
+      message: '添加到黑名单成功'
+    });
+  } catch (error) {
+    logger.error('添加到黑名单失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '添加失败'
+    });
+  }
+};
+
+/**
+ * 从黑名单移除
+ */
+exports.removeFromBlacklist = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    const { blocked_user_id } = req.params;
+
+    const result = await UserBlacklist.findOneAndDelete({
+      user_id,
+      blocked_user_id
+    });
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: '黑名单记录不存在'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: '从黑名单移除成功'
+    });
+  } catch (error) {
+    logger.error('从黑名单移除失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '移除失败'
+    });
+  }
+};
+
+/**
+ * 获取黑名单列表
+ */
+exports.getBlacklist = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const blacklist = await UserBlacklist.find({ user_id })
+      .sort({ created_at: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('blocked_user_id', 'nickname avatar gender')
+      .lean();
+
+    const total = await UserBlacklist.countDocuments({ user_id });
+
+    res.json({
+      success: true,
+      data: {
+        blacklist,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    logger.error('获取黑名单列表失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取黑名单列表失败'
+    });
+  }
+};
+
+/**
+ * 检查用户是否被屏蔽
+ */
+exports.isBlocked = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    const { blocked_user_id } = req.params;
+
+    const blocked = await UserBlacklist.findOne({
+      user_id: blocked_user_id,
+      blocked_user_id: user_id
+    });
+
+    res.json({
+      success: true,
+      data: {
+        is_blocked: !!blocked
+      }
+    });
+  } catch (error) {
+    logger.error('检查黑名单失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '检查失败'
+    });
+  }
+};
+
+/**
+ * 获取匹配统计
+ */
+exports.getMatchStats = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+
+    // 获取统计数据
+    const [historyCount, favoriteCount, blacklistCount] = await Promise.all([
+      MatchHistory.countDocuments({ user_id }),
+      UserFavorite.countDocuments({ user_id }),
+      UserBlacklist.countDocuments({ user_id })
+    ]);
+
+    // 获取今日统计
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todayMatches = await MatchHistory.countDocuments({
+      user_id,
+      action: 'view',
+      created_at: { $gte: today }
+    });
+
+    const todayLikes = await MatchHistory.countDocuments({
+      user_id,
+      action: 'like',
+      created_at: { $gte: today }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        total: {
+          matches: historyCount,
+          favorites: favoriteCount,
+          blacklist: blacklistCount
+        },
+        today: {
+          matches: todayMatches,
+          likes: todayLikes
+        },
+        success_rate: historyCount > 0 ? Math.round((todayLikes / historyCount) * 100) / 100 : 0
+      }
+    });
+  } catch (error) {
+    logger.error('获取匹配统计失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取统计失败'
+    });
+  }
+};
+
+/**
+ * 记录匹配行为
+ */
+exports.recordMatchAction = async (user_id, target_user_id, action, score, reason) => {
+  try {
+    await MatchHistory.create({
+      user_id,
+      target_user_id,
+      match_score: score,
+      match_reason: reason,
+      action
+    });
+  } catch (error) {
+    logger.error('记录匹配行为失败:', error);
+  }
 };

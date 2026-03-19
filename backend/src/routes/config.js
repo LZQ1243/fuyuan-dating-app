@@ -37,4 +37,28 @@ router.post('/import/all', configController.importConfigs);
 // 获取配置元数据
 router.get('/meta', configController.getConfigMetadata);
 
+// 获取配置历史
+router.get('/history/:source', configController.getConfigHistory);
+
+// 回滚配置
+router.post('/:source/rollback/:historyId', configController.rollbackConfig);
+
+// 创建配置快照
+router.post('/snapshot', configController.createSnapshot);
+
+// 恢复配置快照
+router.post('/snapshot/:snapshotId/restore', configController.restoreSnapshot);
+
+// 获取快照列表
+router.get('/snapshots', configController.getSnapshots);
+
+// 配置对比
+router.post('/diff', configController.compareConfigs);
+
+// 批量验证配置
+router.post('/validate/batch', configController.validateConfigsBatch);
+
+// 获取配置使用统计
+router.get('/usage/stats', configController.getConfigUsageStats);
+
 module.exports = router;

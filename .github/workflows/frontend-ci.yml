@@ -1,0 +1,118 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+
+    - name: 设置 Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: frontend-react/package-lock.json
+
+    - name: 安装依赖
+      working-directory: ./frontend-react
+      run: npm ci
+
+    - name: 运行 Lint
+      working-directory: ./frontend-react
+      run: npm run lint
+
+    - name: 运行 TypeScript 类型检查
+      working-directory: ./frontend-react
+      run: npx tsc --noEmit
+
+    - name: 运行测试
+      working-directory: ./frontend-react
+      run: npm run test:run
+      env:
+        CI: true
+
+    - name: 生成测试覆盖率报告
+      working-directory: ./frontend-react
+      run: npm run test:coverage
+
+    - name: 上传覆盖率到 Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./frontend-react/coverage/coverage-final.json
+        flags: frontend
+        name: frontend-coverage
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        cache-dependency-path: frontend-react/package-lock.json
+
+    - name: 安装依赖
+      working-directory: ./frontend-react
+      run: npm ci
+
+    - name: 构建生产版本
+      working-directory: ./frontend-react
+      run: npm run build
+      env:
+        VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+    - name: 上传构建产物
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-build
+        path: frontend-react/dist
+        retention-days: 7
+
+    - name: 构建 Docker 镜像
+      run: |
+        docker build -t fuyuan-frontend:${{ github.sha }} -f frontend-react/Dockerfile .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+
+    - name: 设置 Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+
+    - name: 下载构建产物
+      uses: actions/download-artifact@v3
+      with:
+        name: frontend-build
+        path: ./dist
+
+    - name: 部署到生产环境
+      run: |
+        echo "部署前端到生产环境..."
+        # 这里添加实际的部署命令
+        # 例如: aws s3 sync ./dist s3://fuyuan-frontend
+        # 或: rsync -avz ./dist/ user@server:/var/www/fuyuan/

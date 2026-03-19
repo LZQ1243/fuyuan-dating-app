@@ -275,7 +275,7 @@ const Moments: React.FC = () => {
               </Box>
 
               {moment.content && (
-                <Typography variant="body1" paragraph>
+                <Typography variant="body1" sx={{ mb: 1 }}>
                   {moment.content}
                 </Typography>
               )}
@@ -283,14 +283,14 @@ const Moments: React.FC = () => {
               {moment.images && moment.images.length > 0 && (
                 <Grid container spacing={1} sx={{ mb: 2 }}>
                   {moment.images.map((image, index) => (
-                    <Grid item xs={moment.images!.length === 1 ? 12 : 6} key={index}>
+                    <Grid size={moment.images.length === 1 ? 12 : 6} key={index}>
                       <CardMedia
                         component="img"
                         image={`${API_BASE_URL}${image}`}
                         alt={`Moment ${index + 1}`}
                         sx={{
                           borderRadius: 1,
-                          height: moment.images!.length === 1 ? 'auto' : 200,
+                          height: moment.images.length === 1 ? 'auto' : 200,
                           objectFit: 'cover'
                         }}
                       />
@@ -353,7 +353,7 @@ const Moments: React.FC = () => {
             multiline
             rows={4}
             value={newMoment.content}
-            onChange={(e) => setNewMoment({ ...newMoment, content: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewMoment({ ...newMoment, content: e.target.value })}
             placeholder="分享你的想法..."
           />
           <TextField
@@ -361,7 +361,7 @@ const Moments: React.FC = () => {
             label="位置"
             fullWidth
             value={newMoment.location}
-            onChange={(e) => setNewMoment({ ...newMoment, location: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewMoment({ ...newMoment, location: e.target.value })}
             placeholder="在哪里？"
             sx={{ mt: 2 }}
           />
@@ -422,13 +422,15 @@ const Moments: React.FC = () => {
             rows={2}
             placeholder="写评论..."
             value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            InputProps={{
-              endAdornment: (
-                <IconButton onClick={handleComment}>
-                  <SendIcon />
-                </IconButton>
-              )
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewComment(e.target.value)}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <IconButton onClick={handleComment}>
+                    <SendIcon />
+                  </IconButton>
+                )
+              }
             }}
           />
         </DialogContent>

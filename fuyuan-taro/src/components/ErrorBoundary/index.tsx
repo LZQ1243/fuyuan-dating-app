@@ -1,4 +1,5 @@
-import { Component, ReactNode } from 'react'
+import * as React from 'react'
+const { Component } = React
 import { View, Text, Button } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import './index.scss'
@@ -10,8 +11,8 @@ interface ErrorBoundaryState {
 }
 
 interface ErrorBoundaryProps {
-  children: ReactNode
-  fallback?: ReactNode
+  children: React.ReactNode
+  fallback?: React.ReactNode
   onError?: (error: Error, errorInfo: any) => void
 }
 

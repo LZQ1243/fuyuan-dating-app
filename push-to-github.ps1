@@ -1,59 +1,76 @@
-# 赴缘婚恋应用 - 推送到 GitHub
+# 设置项目路径
+$projectPath = "c:\Users\Administrator\Desktop\赴缘婚恋应用开发"
+Set-Location $projectPath
 
-Write-Host "==================================" -ForegroundColor Cyan
-Write-Host "  赴缘婚恋应用 - 推送到 GitHub" -ForegroundColor Cyan
-Write-Host "==================================" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "  推送项目到GitHub" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# 检查当前分支
-$branch = git branch --show-current
-Write-Host "当前分支: $branch" -ForegroundColor Green
+# 检查Git仓库
+Write-Host "[1/5] 检查Git仓库..." -ForegroundColor Yellow
+if (-not (Test-Path ".git")) {
+    Write-Host "未初始化Git仓库,正在初始化..." -ForegroundColor Yellow
+    git init
+    Write-Host "✅ Git仓库已初始化" -ForegroundColor Green
+} else {
+    Write-Host "✅ Git仓库已存在" -ForegroundColor Green
+}
 Write-Host ""
 
-# 检查远程仓库
-$remotes = git remote -v
-Write-Host "远程仓库:" -ForegroundColor Green
-Write-Host $remotes
+# 查看状态
+Write-Host "[2/5] 查看Git状态..." -ForegroundColor Yellow
+git status
 Write-Host ""
 
-# 检查待提交的文件
-$status = git status --short
-if ($status) {
-    Write-Host "有待提交的文件:" -ForegroundColor Yellow
-    Write-Host $status
-    Write-Host ""
+# 添加文件
+Write-Host "[3/5] 添加文件..." -ForegroundColor Yellow
+git add .
+Write-Host "✅ 文件已添加" -ForegroundColor Green
+Write-Host ""
+
+# 提交更改
+Write-Host "[4/5] 提交更改..." -ForegroundColor Yellow
+$commitMsg = Read-Host "请输入提交信息"
+git commit -m $commitMsg
+Write-Host "✅ 已提交" -ForegroundColor Green
+Write-Host ""
+
+# 推送
+Write-Host "[5/5] 推送到GitHub..." -ForegroundColor Yellow
+Write-Host ""
+Write-Host "检查远程仓库..." -ForegroundColor Cyan
+git remote -v
+Write-Host ""
+
+$remoteUrl = Read-Host "请输入GitHub仓库URL(或回车使用现有远程)"
+
+if ($remoteUrl -ne "") {
+    Write-Host "添加远程仓库..." -ForegroundColor Yellow
+    git remote add origin $remoteUrl
+    Write-Host "✅ 远程仓库已添加" -ForegroundColor Green
 }
 
-# 确认推送
-Write-Host "准备推送到 GitHub..." -ForegroundColor Cyan
-Write-Host "仓库: https://github.com/LZQ1243/fuyuan-dating-app.git" -ForegroundColor Green
 Write-Host ""
-
-$confirm = Read-Host "确认推送? (y/n)"
-if ($confirm -ne "y") {
-    Write-Host "已取消" -ForegroundColor Red
-    exit 0
-}
-
-Write-Host ""
-Write-Host "正在推送..." -ForegroundColor Cyan
-Write-Host ""
-
-# 推送到 GitHub
+Write-Host "正在推送..." -ForegroundColor Yellow
 git push -u origin main
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""
-    Write-Host "==================================" -ForegroundColor Green
-    Write-Host "  推送成功! 🎉" -ForegroundColor Green
-    Write-Host "==================================" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "访问仓库: https://github.com/LZQ1243/fuyuan-dating-app" -ForegroundColor Cyan
+    Write-Host "========================================" -ForegroundColor Green
+    Write-Host "  ✅ 推送成功!" -ForegroundColor Green
+    Write-Host "========================================" -ForegroundColor Green
 } else {
     Write-Host ""
-    Write-Host "推送失败!" -ForegroundColor Red
+    Write-Host "========================================" -ForegroundColor Red
+    Write-Host "  ❌ 推送失败!" -ForegroundColor Red
+    Write-Host "========================================" -ForegroundColor Red
+    Write-Host ""
     Write-Host "请检查:" -ForegroundColor Yellow
-    Write-Host "1. 网络连接" -ForegroundColor Yellow
-    Write-Host "2. GitHub 凭证" -ForegroundColor Yellow
-    Write-Host "3. 仓库地址" -ForegroundColor Yellow
+    Write-Host "1. 仓库URL是否正确" -ForegroundColor White
+    Write-Host "2. 认证信息是否正确" -ForegroundColor White
+    Write-Host "3. 网络连接是否正常" -ForegroundColor White
 }
+
+Write-Host ""
+Read-Host "按任意键退出..."
